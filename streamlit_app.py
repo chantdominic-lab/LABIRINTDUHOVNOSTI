@@ -1,96 +1,102 @@
 import streamlit as st
 import time
 
-# 1. MRAČNI STIL I FAVICON
-st.set_page_config(page_title="Labirint Duhovnosti", page_icon="🌀")
-st.markdown("<style>.stApp { background-color: #000; color: #00FF41; font-family: monospace; }</style>", unsafe_allow_html=True)
+# --- POSTAVKE I DIZAJN ---
+st.set_page_config(page_title="Labirint Istine", page_icon="👁️", layout="centered")
 
-# 2. INICIJALIZACIJA (Pamćenje napretka)
-if 'faza' not in st.session_state:
-    st.session_state.faza = "uvod"
+st.markdown("""
+    <style>
+    .stApp { background-color: #050505; color: #d3d3d3; }
+    .glitch { color: #ff0000; font-size: 2.5rem; text-align: center; font-family: 'Courier New', monospace; text-shadow: 2px 2px #330000; }
+    .room-text { font-size: 1.4rem; font-family: 'Georgia', serif; line-height: 1.7; padding: 20px; border-left: 3px solid #444; }
+    .stButton>button { width: 100%; background-color: #1a1a1a; color: #ff4b4b; border: 1px solid #444; }
+    .stButton>button:hover { background-color: #330000; border: 1px solid #ff0000; }
+    </style>
+    """, unsafe_allow_html=True)
 
-t = st.secrets["tekstovi"]
-o = st.secrets["odgovori"]
+# --- LOGIKA LABIRINTA (Session State) ---
+if 'soba' not in st.session_state:
+    st.session_state.soba = 'uvod'
+if 'bodovi' not in st.session_state:
+    st.session_state.bodovi = 0
 
-# 3. LOGIKA LABIRINTA (Prati tvoj PDF od 1. do 6. stranice)
+def kucaj_tekst(tekst):
+    placeholder = st.empty()
+    prikaz = ""
+    for char in tekst:
+        prikaz += char
+        placeholder.markdown(f"<div class='room-text'>{prikaz}▌</div>", unsafe_allow_html=True)
+        time.sleep(0.03)
+    placeholder.markdown(f"<div class='room-text'>{prikaz}</div>", unsafe_allow_html=True)
 
-if st.session_state.faza == "uvod":
-    st.title("🌀 LABIRINT DUHOVNOSTI")
-    st.write(t["uvod"])
-    st.write(t["upozorenje"])
-    if st.button("UĐI"):
-        st.session_state.faza = "q1"
+# --- SOBE ---
+
+# 1. UVOD
+if st.session_state.soba == 'uvod':
+    st.markdown('<p class="glitch">ULAZ U LABIRINT</p>', unsafe_allow_html=True)
+    uvod_tekst = "Nisu svi putevi prema Bogu. Tama je gusta. Čvršće nego ikad prije moramo držati Božju riječ."
+    kucaj_tekst(uvod_tekst)
+    if st.button("KRENI DALJE"):
+        st.session_state.soba = 'prvo_pitanje'
         st.rerun()
 
-elif st.session_state.faza == "q1":
-    st.write(t["q1"])
-    ans1 = st.text_input("Tvoj odgovor:", key="ans1").strip().lower()
-    if st.button("PROVJERI"):
-        if ans1 == o["q1"]:
-            st.success("Točno. Srce postaje prostor tame.")
-            st.session_state.faza = "q2"
-            st.rerun()
-        else: st.error("Pogrešan trag.")
-
-elif st.session_state.faza == "q2":
-    st.write(t["q2"])
-    izbor = st.radio("Odaberi:", ["Budala", "Fizički radnik", "Bog"])
-    if st.button("POTVRDI"):
-        if izbor.lower() == o["q2"]:
-            st.success("Točno. Težnja nagona da čovjek postane bog.")
-            st.session_state.faza = "soba_ai"
-            st.rerun()
-        else: st.error("Sjene su te progutale.")
-
-elif st.session_state.faza == "soba_ai":
-    st.write("Tko još uz pale anđele slično razmišlja?")
-    c_ai = st.radio("Znaš li?", ["Znam", "Ne znam"])
-    if st.button("NASTAVI"):
-        if c_ai == "Ne znam":
-            st.info(t["ai_info"])
-        st.session_state.faza = "otac_lazi"
+# 2. PRVO PITANJE (Pobuna anđela)
+elif st.session_state.soba == 'prvo_pitanje':
+    st.markdown('<p class="glitch">PRVA SOBA</p>', unsafe_allow_html=True)
+    kucaj_tekst("Jedan od anđela je u sebi stvarao želju da postane - što?")
+    col1, col2, col3 = st.columns(3)
+    if col1.button("Bog"):
+        st.success("Točno!")
+        st.session_state.bodovi += 1
+        time.sleep(1)
+        st.session_state.soba = 'izbor_soba'
+        st.rerun()
+    if col2.button("Budala"):
+        st.error("Pogrešno!")
+        st.session_state.soba = 'izbor_soba'
+        st.rerun()
+    if col3.button("Radnik"):
+        st.error("Pogrešno!")
+        st.session_state.soba = 'izbor_soba'
         st.rerun()
 
-elif st.session_state.faza == "otac_lazi":
-    st.write(t["otac_lazi"])
-    ans3 = st.text_input("Upiši ime:", key="ans3").strip().lower()
-    if st.button("PROVJERI"):
-        if ans3 == o["q3"]:
-            st.success("Točno. On je Otac Laži.")
-            st.session_state.faza = "izbor"
-            st.rerun()
-        else: st.error("Laž te zaslijepila.")
-
-elif st.session_state.faza == "izbor":
-    st.write("Želiš li nastaviti dublje kroz duhovne tekstove?")
+# 3. IZBOR LIJEVO ILI DESNO
+elif st.session_state.soba == 'izbor_soba':
+    st.markdown('<p class="glitch">RASKRIŽJE</p>', unsafe_allow_html=True)
+    kucaj_tekst("Pred tobom su dva puta. Izaberi sobu:")
     col1, col2 = st.columns(2)
-    with col1:
-        if st.button("ŽELIM!"):
-            st.session_state.faza = "finale"
-            st.rerun()
-    with col2:
-        if st.button("NE ŽELIM!"):
-            st.warning("Vrata se zatvaraju. Mrak vlada.")
-            p = st.empty()
-            for i in range(7, -1, -1):
-                p.header(f"Povratak za {i}...")
-                time.sleep(1)
-            st.session_state.faza = "uvod"
-            st.rerun()
+    if col1.button("GENERACIJE (Lijevo)"):
+        st.session_state.soba = 'soba_generacije'
+        st.rerun()
+    if col2.button("SOTONA NE MIRUJE (Desno)"):
+        st.session_state.soba = 'soba_sotona'
+        st.rerun()
 
-elif st.session_state.faza == "finale":
-    st.subheader("Vrijeme je sveto")
-    st.write("Označi svoje odgovore pred Bogom:")
-    d1 = st.checkbox("Biblija je pisana Božja riječ?")
-    d2 = st.checkbox("Sotona je Lažac?")
-    d3 = st.checkbox("Prihvaćaš li Isusa za spasitelja?")
+# 4. SOBA GENERACIJE
+elif st.session_state.soba == 'soba_generacije':
+    kucaj_tekst("Generacije koje dolaze neće tražiti Boga. Biblija neće postojati.")
+    if st.button("IDEM DALJE"):
+        st.session_state.soba = 'kraj'
+        st.rerun()
+
+# 5. SOBA SOTONA NE MIRUJE
+elif st.session_state.soba == 'soba_sotona':
+    kucaj_tekst("Sotona lagano zarobljava ljude i udaljava ih od svega što je sveto.")
+    if st.button("TRAŽI IZLAZ"):
+        st.session_state.soba = 'kraj'
+        st.rerun()
+
+# 6. KRAJ (Rezultat)
+elif st.session_state.soba == 'kraj':
+    if st.session_state.bodovi > 0:
+        st.balloons()
+        st.markdown('<p class="glitch" style="color:white;">SVJETLO</p>', unsafe_allow_html=True)
+        kucaj_tekst("Čestitamo! Izašli ste iz tame. Dobro došli u svjetlo. Uzmi Bibliju.")
+    else:
+        st.markdown('<p class="glitch">TAMA</p>', unsafe_allow_html=True)
+        kucaj_tekst("Labirint je završio, ali tama je u vama. Samo Isus donosi svjetlo.")
     
-    if st.button("IZLAZ"):
-        if d1 and d2 and d3:
-            st.balloons()
-            st.success(t["izlaz_svjetlo"])
-        else:
-            st.error(t["izlaz_tama"])
-        time.sleep(10)
-        st.session_state.faza = "uvod"
+    if st.button("VRATI SE NA POČETAK"):
+        st.session_state.soba = 'uvod'
+        st.session_state.bodovi = 0
         st.rerun()
