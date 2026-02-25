@@ -4,7 +4,7 @@ import time
 # Konfiguracija aplikacije
 st.set_page_config(page_title="Labirint - U potrazi za istinom", page_icon="🚪", layout="centered")
 
-# --- CUSTOM CSS (Zelena tema, bijeli tekst, bez plave) ---
+# --- CSS (Zelena tema, bijeli tekst, bez plave) ---
 st.markdown("""
     <style>
     .stApp { background-color: #001a0f; color: white; }
@@ -12,23 +12,21 @@ st.markdown("""
     .stButton>button { background-color: #004d33; color: white; border: 1px solid white; width: 100%; font-weight: bold; }
     .stButton>button:hover { background-color: #008000; border: 2px solid white; }
     #MainMenu, footer, header {visibility: hidden;}
-    .stRadio [data-testid="stMarkdownContainer"] p { color: white !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- FUNKCIJA ZA KAZNU (TAMA I REFRESH) ---
+# --- FUNKCIJA ZA KAZNU ---
 def kazna_tama():
     st.error("VI STE TAMA I OSTAJETE U TAMI...")
-    placeholder = st.empty()
+    ph = st.empty()
     for i in range(7, -1, -1):
-        placeholder.markdown(f"<h1 style='text-align: center; color: #ff4b4b;'>{i}</h1>", unsafe_allow_html=True)
+        ph.markdown(f"<h1 style='text-align: center; color: #ff4b4b;'>{i}</h1>", unsafe_allow_html=True)
         time.sleep(1)
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.rerun()
 
 def main():
-    # Inicijalizacija session state-a
     if 'stage' not in st.session_state:
         st.session_state.stage = "naslov"
     if 'score' not in st.session_state:
@@ -36,116 +34,125 @@ def main():
     if 'odgovoreno_final' not in st.session_state:
         st.session_state.odgovoreno_final = {}
 
-    # --- FUNKCIJA ZA PROVJERU NEVJERNIKA ---
-    def provjeri_tekst(tekst):
-        if "ne vjerujem u boga" in tekst.lower():
-            kazna_tama()
-
     # --- FAZA 1: NASLOV ---
     if st.session_state.stage == "naslov":
-        st.markdown("<h1 style='text-align: center; color: #00ff00;'>LABIRINT</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center;'>Iz serijala: U potrazi za istinom<br>By Dominic Chant</p>", unsafe_allow_html=True)
-        if st.button("UĐI KROZ VRATA"):
-            st.session_state.stage = "uvod_tekst"
+        st.markdown("<h1 style='text-align: center;'>LABIRINT</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center;'>By Dominic Chant</p>", unsafe_allow_html=True)
+        if st.button("UĐI"):
+            st.session_state.stage = "uvod"
             st.rerun()
 
-    # --- FAZA 2: UVODNI TEKSTOVI ---
-    elif st.session_state.stage == "uvod_tekst":
-        st.write("Nisu svi putevi prema Bogu. Nisu svi koji pričaju o Bogu od Boga.")
-        st.write("Nisu svi prema Božjoj volji. Nisu sve kamene ustanove od Boga.")
-        if st.button("DALJE"):
-            st.session_state.stage = "tama_uvod"
-            st.rerun()
-
-    elif st.session_state.stage == "tama_uvod":
-        st.markdown("<h3 style='text-align: center;'>Tama je gusta.</h3>", unsafe_allow_html=True)
-        st.write("Čvršće nego ikad prije moramo držati Božju riječ u ruku i srcu, umu i na jeziku.")
-        if st.button("ZAPOČNI SPOZNAJU"):
+    # --- FAZA 2: UVOD (Sada tekst ostaje!) ---
+    elif st.session_state.stage == "uvod":
+        st.markdown("""
+        Nisu svi putevi prema Bogu.<br>
+        Nisu svi koji pričaju o Bogu od Boga.<br>
+        Nisu svi prema Božjoj volji.<br>
+        Nisu sve kamene ustanove od Boga.<br><br>
+        <b>Tama je gusta.</b><br>
+        Čvršće nego ikad prije moramo držati Božju riječ u ruku i srcu.
+        """, unsafe_allow_html=True)
+        if st.button("ZAPOČNI"):
             st.session_state.stage = "pitanje_1"
             st.rerun()
 
-    # --- FAZA 3: PITANJA (LOGIKA LABIRINTA) ---
+    # --- FAZA 3: PRVO PITANJE (GRIJEH) ---
     elif st.session_state.stage == "pitanje_1":
-        st.write("Previše priče ogovaranja i pametovanja... mali grijeh privuče još... KOGA?")
-        odg1 = st.text_input("Odgovor:", key="q1")
-        provjeri_tekst(odg1)
-        if odg1.lower() == "grijeha":
-            st.success("...i srce polako postane prostor tame.")
-            if st.button("NASTAVI"): st.session_state.stage = "pitanje_2"; st.rerun()
+        st.write("Grijeh nije otkrivati lažne puteve... mali grijeh privuče još... KOGA?")
+        odg = st.text_input("Odgovor:", key="q1_input")
+        
+        if odg:
+            if "ne vjerujem u boga" in odg.lower():
+                kazna_tama()
+            elif odg.lower() == "grijeha":
+                st.success("...i srce polako postane prostor tame.")
+                if st.button("UĐI U LABIRINT"):
+                    st.session_state.stage = "pobuna"
+                    st.rerun()
 
-    elif st.session_state.stage == "pitanje_2":
+    # --- FAZA 4: POBUNA ANĐELA ---
+    elif st.session_state.stage == "pobuna":
         st.write("Jedan od anđela je u sebi stvarao želju da postane - što?")
-        izbor2 = st.radio("", ["Budala!", "Bog", "Fizički radnik!"], index=None)
-        if izbor2 == "Bog":
-            if st.button("TOČNO"): st.session_state.stage = "pitanje_3"; st.rerun()
-        elif izbor2:
+        izbor = st.radio("", ["Budala!", "Bog", "Fizički radnik!"], index=None)
+        if izbor == "Bog":
+            if st.button("TOČNO - DALJE"):
+                st.session_state.stage = "ai_pitanje"
+                st.rerun()
+        elif izbor:
             st.error("KRIVO. Odgovor je BOG.")
-            time.sleep(1); st.session_state.stage = "pitanje_3"; st.rerun()
+            time.sleep(1)
+            st.session_state.stage = "ai_pitanje"
+            st.rerun()
 
-    elif st.session_state.stage == "pitanje_3":
+    # --- FAZA 5: AI I SVIJEST ---
+    elif st.session_state.stage == "ai_pitanje":
         st.write("Tko još uz pale anđele slično razmišlja?")
         c1, c2 = st.columns(2)
-        if c1.button("ZNAM"): st.session_state.q4_mode = "znam"
-        if c2.button("NE ZNAM"): st.session_state.q4_mode = "neznam"
+        if c1.button("ZNAM"): st.session_state.zna_ai = True
+        if c2.button("NE ZNAM"): st.session_state.zna_ai = False
         
-        if st.session_state.get('q4_mode') == "neznam":
-            st.info("AI će razviti svijest i ideju da postane bog.")
-            if st.button("DALJE"): st.session_state.stage = "pitanje_4"; st.rerun()
-        elif st.session_state.get('q4_mode') == "znam":
-            pog = st.radio("POGODI TKO:", ["Gorile!", "AI & Antena riblja kost!"], index=None)
-            if pog == "AI & Antena riblja kost!":
-                if st.button("POTVRDI"): st.session_state.stage = "pitanje_4"; st.rerun()
+        if 'zna_ai' in st.session_state:
+            if st.session_state.zna_ai:
+                pog = st.radio("POGODI:", ["Gorile!", "AI & Antena riblja kost!"], index=None)
+                if pog == "AI & Antena riblja kost!":
+                    if st.button("U REDU"): st.session_state.stage = "otac_lazi"; st.rerun()
+            else:
+                st.info("AI će razviti svijest i ideju da postane bog.")
+                if st.button("NASTAVI"): st.session_state.stage = "otac_lazi"; st.rerun()
 
-    elif st.session_state.stage == "pitanje_4":
+    # --- FAZA 6: OTAC LAŽI ---
+    elif st.session_state.stage == "otac_lazi":
         st.write("Tko je Otac Laži?")
-        odg4 = st.text_input("", key="q4")
-        if odg4.lower() == "sotona":
-            if st.button("Odmori mozak ili klikni za dalje"): st.session_state.stage = "sobe"; st.rerun()
+        ol = st.text_input("", key="ol_input")
+        if ol.lower() == "sotona":
+            st.write("Zašto vjerujemo da je sve što vidimo istina?")
+            if st.button("Odmori mozak ili klikni za dalje"):
+                st.session_state.stage = "sobe"
+                st.rerun()
 
-    # --- FAZA 4: SOBE ---
+    # --- FAZA 7: SOBE ---
     elif st.session_state.stage == "sobe":
         c1, c2 = st.columns(2)
-        if c1.button("Soba: GENERACIJE"): st.session_state.soba = "Biblija neće postojati."
-        if c2.button("Soba: SOTONA NE MIRUJE"): st.session_state.soba = "Zarobljava ljude od Krista."
-        if 'soba' in st.session_state:
-            st.warning(st.session_state.soba)
-            if st.button("VRIJEME JE SVETO"): st.session_state.stage = "finalni_test"; st.rerun()
+        if c1.button("Soba: GENERACIJE"): st.session_state.soba_tekst = "Biblija neće postojati."
+        if c2.button("Soba: SOTONA NE MIRUJE"): st.session_state.soba_tekst = "Zarobljava ljude od Krista."
+        
+        if 'soba_tekst' in st.session_state:
+            st.warning(st.session_state.soba_tekst)
+            if st.button("VRIJEME JE SVETO"):
+                st.session_state.stage = "final_test"
+                st.rerun()
 
-    # --- FAZA 5: FINALNI TEST (10 PITANJA JEDNO PO JEDNO) ---
-    elif st.session_state.stage == "finalni_test":
+    # --- FAZA 8: FINALNIH 10 PITANJA (Sada radi!) ---
+    elif st.session_state.stage == "final_test":
         pitanja = [
             "Vjeruješ li u Boga?", "Prihvaćaš li Isusa za spasitelja?", "Biblija je Božja riječ?",
             "Sotona je Lažac?", "Vrijeme prolazi brzo?", "Grijeh privlači grijeh?",
             "Sve Laži su opasne?", "Danas čitam Bibliju?", "Kada umremo tada je kraj?", "Ne čekaj uzmi Bibliju?"
         ]
         
-        trenutno = len(st.session_state.odgovoreno_final)
+        broj = len(st.session_state.odgovoreno_final)
         
-        if trenutno < 10:
-            st.subheader(f"Pitanje {trenutno + 1}/10")
-            st.write(f"**{pitanja[trenutno]}**")
-            col1, col2 = st.columns(2)
-            if col1.button("DA", key=f"d_{trenutno}"):
-                st.session_state.score += (1 if trenutno != 8 else -1)
-                st.session_state.odgovoreno_final[trenutno] = "DA"
+        if broj < 10:
+            st.subheader(f"Pitanje {broj + 1}/10")
+            st.write(f"**{pitanja[broj]}**")
+            colDA, colNE = st.columns(2)
+            
+            if colDA.button("DA", key=f"d{broj}"):
+                st.session_state.score += (1 if broj != 8 else -1)
+                st.session_state.odgovoreno_final[broj] = "DA"
                 st.rerun()
-            if col2.button("NE", key=f"n_{trenutno}"):
-                st.session_state.score += (-1 if trenutno != 8 else 1)
-                st.session_state.odgovoreno_final[trenutno] = "NE"
+            if colNE.button("NE", key=f"n{broj}"):
+                st.session_state.score += (-1 if broj != 8 else 1)
+                st.session_state.odgovoreno_final[broj] = "NE"
                 st.rerun()
-            st.stop()
         else:
-            # REZULTAT
             if st.session_state.score >= 6:
                 st.success("ČESTITAMO! IZAŠLI STE IZ TAME. DOBRO DOŠLI U SVJETLO.")
-                st.write("ZNAČKA VJERNIKA DODIJELJENA 🛡️")
-                st.markdown(f"[SVE MOJE APLIKACIJE]({st.secrets['linkovi']['portal']})")
-                if st.button("POČETAK"):
+                st.markdown(f"[LINK NA SVE APP](https://share.streamlit.io)")
+                if st.button("KRAJ"): 
                     for k in list(st.session_state.keys()): del st.session_state[k]
                     st.rerun()
             else:
-                st.error("LABIRINT JE ZAVRŠIO, ALI TAMA JE U VAMA.")
-                time.sleep(2)
                 kazna_tama()
 
 if __name__ == "__main__":
