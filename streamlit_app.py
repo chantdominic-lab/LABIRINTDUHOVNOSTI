@@ -1,107 +1,63 @@
-import streamlit as st
-import time
-
-# --- 1. KONFIGURACIJA I STIL ---
-st.set_page_config(page_title="Labirint Duhovnosti", page_icon="🚪", layout="centered")
-
-st.markdown("""
-<style>
-    .stApp { background-color: black; color: white; }
-    .zelena { color: #00FF41; font-family: 'Courier New', monospace; font-size: 22px; text-align: center; font-weight: bold; }
-    .bijela-it { color: white; font-family: 'Georgia', serif; font-size: 20px; text-align: center; font-style: italic; }
-    .odbrojavanje { color: #ff4b4b; font-size: 60px; text-align: center; font-weight: bold; }
-    div.stButton > button { background-color: transparent; color: #00FF41; border: 1px solid #00FF41; width: 100%; }
-    div.stButton > button:hover { background-color: #00FF41; color: black; }
-</style>
-""", unsafe_allow_html=True)
-
-# --- 2. POMOĆNE FUNKCIJE ---
-def restart_s_odbrojavanjem():
-    placeholder = st.empty()
-    for i in range(7, -1, -1):
-        placeholder.markdown(f'<p class="odbrojavanje">{i}</p>', unsafe_allow_html=True)
-        time.sleep(1)
-    st.session_state.clear()
-    st.rerun()
-
-# --- 3. INICIJALIZACIJA ---
-if 'faza' not in st.session_state:
-    st.session_state.faza = 'UVOD'
-if 'da_brojac' not in st.session_state:
-    st.session_state.da_brojac = 0
-
-# --- 4. LOGIKA LABIRINTA ---
-
-if st.session_state.faza == 'UVOD':
-    st.markdown('<p class="zelena">LABIRINT DUHOVNOSTI<br>By Dominic Chant</p>', unsafe_allow_html=True)
+# --- 18. FINALNA SOBA: VRIJEME JE SVETO (KRAJ LABIRINTA) ---
+elif st.session_state.faza == 'VRIJEME_SVETO':
+    st.markdown('<p class="zelena">VRIJEME JE SVETO</p>', unsafe_allow_html=True)
     st.write("---")
-    st.markdown('<p class="bijela-it">Nisu svi putevi prema Bogu.<br>Nisu svi koji pričaju o Bogu od Boga.</p>', unsafe_allow_html=True)
-    st.warning("Tama je gusta. Držite Božju riječ u srcu.")
-    if st.button("Uđi u Labirint..."):
-        st.session_state.faza = 'GRIJEH'
-        st.rerun()
-
-elif st.session_state.faza == 'GRIJEH':
-    st.write("Mali grijeh privuče još... **(koga?)**")
-    odgovor = st.text_input("Upišite odgovor:", key="q1").lower().strip()
-    if odgovor == "grijeha":
-        st.success("Točno!")
-        if st.button("Nastavi"):
-            st.session_state.faza = 'NASLOV_2'
-            st.rerun()
-
-elif st.session_state.faza == 'NASLOV_2':
-    st.markdown('<p class="zelena">Sve je u snazi vjere</p>', unsafe_allow_html=True)
-    st.write("Sotona se plaši Isusa? Ne, samo Isus može protjerati zlo svojom milošću.")
-    st.write("Koga je Isus istjerao iz mladića u krdo svinja?")
-    izbor = st.radio("Odaberi:", ["Laži!", "Magiju!", "Legiju!"], key="r1")
-    if izbor == "Legiju!" and st.button("Provjeri"):
-        st.session_state.faza = 'VJERUJES_LI'
-        st.rerun()
-
-elif st.session_state.faza == 'VJERUJES_LI':
-    st.write("Vjeruješ li u Boga?")
-    c1, c2 = st.columns(2)
-    if c1.button("Vjerujem!"):
-        st.session_state.faza = 'ZELIS_DALJE'
-        st.rerun()
-    if c2.button("Ne vjerujem!"):
-        st.error("Vrata se zatvaraju...")
-        restart_s_odbrojavanjem()
-
-elif st.session_state.faza == 'ZELIS_DALJE':
-    st.write("Želiš li nastaviti dublje kroz Labirint?")
-    c1, c2 = st.columns(2)
-    if c1.button("Želim!"):
-        st.session_state.faza = 'FINAL'
-        st.rerun()
-    if c2.button("Ne želim!"):
-        restart_s_odbrojavanjem()
-
-elif st.session_state.faza == 'FINAL':
-    st.markdown('<p class="zelena">Vrijeme je sveto</p>', unsafe_allow_all_html=True)
-    pitanja = [
-        "Prihvaćaš li Isusa za spasitelja?", 
-        "Biblija je Božja riječ?", 
-        "Sotona je Lažac?", 
-        "Grijeh privlači grijeh?", 
-        "Danas čitam Bibliju?"
+    
+    st.markdown('<p class="bijela-it">Ne pravi sebi Boga i ne klanjaj mu se i ništa što je na nebu ili zemlji ne pravi obličja i ne moli se mrtvim predmetima.</p>', unsafe_allow_html=True)
+    
+    # Lista pitanja za duhovni test
+    pitanja_test = [
+        "Vjeruješ li u Boga?", "Prihvaćaš li Isusa za spasitelja?", 
+        "Biblija je pisana Božja riječ?", "Sotona je Lažac?", 
+        "Vrijeme prolazi brzo?", "Grijeh privlači grijeh", 
+        "Sve Laži su opasne?", "Danas čitam Bibliju?", 
+        "Kada umremo tada je kraj?", "Ne čekaj uzmi Bibliju?"
     ]
-    with st.form("f_form"):
-        odgovori = []
-        for i, p in enumerate(pitanja):
-            odgovori.append(st.radio(p, ["Ne", "Da"], key=f"p_{i}"))
-        if st.form_submit_button("ZAVRŠI"):
-            da_count = odgovori.count("Da")
-            if da_count >= 3:
+    
+    # Koristimo formu kako bismo obradili sve odjednom
+    with st.form("duhovni_test"):
+        rezultati = []
+        for i, pitanje in enumerate(pitanja_test):
+            # Da ili Ne butoni (radio)
+            odg = st.radio(pitanje, ["Ne", "Da"], key=f"final_{i}", horizontal=True)
+            rezultati.append(odg)
+        
+        submit = st.form_submit_button("ZAVRŠI I IZAĐI IZ LABIRINTA")
+        
+        if submit:
+            # Zbrajanje pozitivnih odgovora
+            # (Pitanje "Kada umremo tada je kraj?" je trik pitanje, ali ovdje zbrajamo čiste 'Da' odgovore za vjeru)
+            broj_da = rezultati.count("Da")
+            
+            if broj_da >= 7: # Prag za izlazak u svjetlo
                 st.balloons()
-                st.success("DOBRO DOŠLI U SVJETLO!")
-                st.info("Uzmi Bibliju.")
-                st.markdown("[MOJE OSTALE APP](https://share.streamlit.io)")
+                st.markdown('<p class="zelena" style="font-size: 30px;">ČESTITAMO!</p>', unsafe_allow_html=True)
+                st.success("Izašli ste iz tame, dobro došli u svjetlo!")
+                
+                # Značka vjernika
+                st.markdown("""
+                    <div style="border: 2px solid #00FF41; padding: 20px; text-align: center; border-radius: 10px;">
+                        <h2 style="color: #00FF41;">🛡️ ZNAČKA VJERNIKA</h2>
+                        <p style="color: white;">Molim te ovdje osvježi stranicu i klikni na x zatvori ovo i uzmi Bibliju.<br>
+                        <b>Sjeti se: laži su grijeh.</b></p>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                st.write("---")
+                st.markdown(f'<p class="autor-tekst">Sve aplikacije: <a href="https://share.streamlit.io" target="_blank" style="color:#00FF41;">🔗 MOJI PROJEKTI</a></p>', unsafe_allow_html=True)
+            
             else:
-                st.warning("Tama je u vama...")
-                restart_s_odbrojavanjem()
+                # Korisnik je ostao u tami
+                st.warning("Labirint je završio. Izašli ste iz tame labirinta ali tama je u vama i samo Isus donosi svjetlo, pronađi ga u Bibliji.")
+                
+                # Odbrojavanje od sedam prema nuli
+                placeholder_kraj = st.empty()
+                for i in range(7, -1, -1):
+                    placeholder_kraj.markdown(f'<p class="odbrojavanje">{i}</p>', unsafe_allow_html=True)
+                    time.sleep(1)
+                
+                # Reset na početak igre
+                st.session_state.clear()
+                st.rerun()
 
-# Footer
-st.write("---")
-st.markdown('<p style="text-align:center; opacity:0.6;"><a href="https://share.streamlit.io" target="_blank" style="color:#00FF41; text-decoration:none;">🔗 SVI MOJI PROJEKTI</a></p>', unsafe_allow_html=True)
+# --- KRAJ LABIRINTA DUHOVNOSTI ---
