@@ -118,16 +118,21 @@ def main():
             st.write(f"**{pitanja[br]}**")
             da, ne = st.columns(2)
             if da.button("DA", key=f"d{br}"):
+                # Na deveto pitanje (indeks 8), DA je netočan odgovor (-1)
                 st.session_state.score += (1 if br != 8 else -1)
                 st.session_state.finalni_odgovori[br] = "DA"; st.rerun()
             if ne.button("NE", key=f"n{br}"):
+                # Na deveto pitanje (indeks 8), NE je točan odgovor (+1)
                 st.session_state.score += (-1 if br != 8 else 1)
                 st.session_state.finalni_odgovori[br] = "NE"; st.rerun()
         else:
-            if st.score >= 6:
+            # POPRAVLJENO: st.session_state.score umjesto st.score
+            if st.session_state.score >= 6:
                 st.success("ČESTITAMO! DOBRO DOŠLI U SVJETLO. ZNAČKA VJERNIKA 🛡️")
                 st.markdown("[SVE MOJE APLIKACIJE](https://share.streamlit.io)")
-                if st.button("KRAJ"): st.session_state.korak = 0; st.rerun()
+                if st.button("KRAJ"): 
+                    for k in list(st.session_state.keys()): del st.session_state[k]
+                    st.rerun()
             else:
                 pokreni_kaznu("Labirint je završio, ali TAMA JE U VAMA.")
 
