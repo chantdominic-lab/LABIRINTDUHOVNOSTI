@@ -1,118 +1,113 @@
-import streamlit as st
-import time
+# --- 6. LOGIKA LABIRINTA: OD GRIJEHA DO KRAJA ---
 
-# --- 1. KONFIGURACIJA I STIL ---
-st.set_page_config(page_title="Labirint Duhovnosti", page_icon="🚪", layout="centered")
-
-st.markdown("""
-<style>
-    .stApp { 
-        background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), 
-                    url('https://www.transparenttextures.com');
-        background-color: black; color: white; 
-    }
-    .stMarkdown, p, div, label, .stRadio { color: white !important; font-family: 'Georgia', serif; }
-    .zelena-autor { color: #00FF41 !important; font-family: 'Courier New', monospace; font-size: 20px; text-align: center; font-weight: bold; }
-    .odbrojavanje { color: #ff4b4b !important; font-size: 55px; text-align: center; font-weight: bold; }
-    
-    /* Gumbi - Zeleni okvir, bez bijele boje */
-    button, .stButton>button { background-color: transparent !important; color: #00FF41 !important; border: 1px solid #00FF41 !important; border-radius: 0px !important; width: 100%; font-weight: bold; }
-    button:hover { background-color: #00FF41 !important; color: black !important; }
-    
-    /* Radio gumbi - Da/Ne stil */
-    div[data-testid="stRadio"] > div { background-color: #111; padding: 10px; border-radius: 5px; border: 1px solid #333; }
-    
-    input { background-color: #000 !important; color: #00FF41 !important; border: 1px solid #00FF41 !important; }
-    label[data-testid="stWidgetLabel"] { display: none !important; }
-</style>
-""", unsafe_allow_html=True)
-
-# --- 2. FUNKCIJA ZA IZBACIVANJE (7 SEKUNDI) ---
-def izbaci_u_tamu(poruka):
-    st.empty()
-    st.markdown(f'<p class="odbrojavanje" style="font-size: 24px;">{poruka}</p>', unsafe_allow_html=True)
-    p = st.empty()
-    for i in range(7, -1, -1):
-        p.markdown(f'<p class="odbrojavanje">{i}</p>', unsafe_allow_html=True)
-        time.sleep(1)
-    st.session_state.clear()
-    st.rerun()
-
-# --- 3. LOGIKA LABIRINTA ---
-if 'faza' not in st.session_state: st.session_state.faza = 'UVOD'
-
-# --- UVOD, GRIJEH, ANDJELI, FILM (Skraćeno za pregled, ostaje tvoj tekst) ---
-if st.session_state.faza == 'UVOD':
-    st.markdown('<p class="zelena-autor">Iz serijala: U potrazi za istinom<br>By Dominic Chant</p>', unsafe_allow_html=True)
-    if st.button("UĐI U LABIRINT"): st.session_state.faza = 'GRIJEH'; st.rerun()
-
+# FAZA: GRIJEH I SJEME
 elif st.session_state.faza == 'GRIJEH':
-    st.write("Mali grijeh privuče još... (koga?)")
-    odg = st.text_input("", key="g", placeholder="...").lower().strip()
-    if odg == "grijeha":
-        st.success("Točno!")
-        if st.button("DALJE"): st.session_state.faza = 'ANDJELI'; st.rerun()
+    st.write("I treba pazit da od previše priče ne stvori se sjeme koje će pustit klice a klice žile koje će izrasti u drvo plodno koje će davati plod grijeha.")
+    st.write("Previše priče ogovaranja i pametovanja protiv drugih pred drugima može polako stvarati grijeh a mali grijeh privuče još...")
+    st.markdown('<p style="color:#00FF41;">(koga?)</p>', unsafe_allow_html=True)
+    odg_g = st.text_input("", key="qg", placeholder="Upiši odgovor...").lower().strip()
+    if odg_g == "grijeha":
+        st.markdown('<p class="bijela-velika">...i srce polako postane prostor tame.</p>', unsafe_allow_html=True)
+        if st.button("NASTAVI"): st.session_state.faza = 'ANDJELI'; st.rerun()
 
+# FAZA: ANĐELI I POBUNA
 elif st.session_state.faza == 'ANDJELI':
-    st.write("Anđeo je želio postati - što?")
-    if st.button("bog!"): st.session_state.faza = 'FILM'; st.rerun()
+    st.write("Oduvijek stvorenje ima nagon da bude: obožavan, slavan, moćan, i da bude poput boga.")
+    st.write("U vrijeme pobune anđela, oni se nisu pobunili zbog 'zlata' nego nisu više željeli biti poslušni bogu. Jedan od anđela je u sebi stvarao želju da postane - što?")
+    c1, c2, c3 = st.columns(3)
+    if c1.button("Budala!"): st.error("Krivo.")
+    if c2.button("Fizički radnik!"): st.error("Krivo.")
+    if c3.button("bog!"): st.session_state.faza = 'DANAŠNJE_VRIJEME'; st.rerun()
 
-elif st.session_state.faza == 'FILM':
-    st.markdown('<p style="text-align:center; font-size:35px; padding:50px;">Težnja nagona da čovjek postane bog.</p>', unsafe_allow_html=True)
-    time.sleep(4); st.session_state.faza = 'GLAD'; st.rerun()
+# FAZA: DANAŠNJE VRIJEME I AI
+elif st.session_state.faza == 'DANAŠNJE_VRIJEME':
+    st.markdown('<p class="zelena-autor" style="font-size:30px;">Što se događa u današnje vrijeme?</p>', unsafe_allow_html=True)
+    st.markdown('<p class="bijela-velika">Težnja nagona da čovjek postane bog.</p>', unsafe_allow_html=True)
+    st.write("Tko još uz pale anđele slično razmišlja?")
+    c1, col2 = st.columns(2)
+    if c1.button("Znam."): st.session_state.ai_put = 'znam'
+    if col2.button("Ne znam."):
+        st.info("Umjetna inteligencija prije ili poslije će razviti svijest i ideju da postane bog.")
+        if st.button("IDEMO DALJE"): st.session_state.faza = 'OTAC_LAZI'; st.rerun()
+    if st.session_state.get('ai_put') == 'znam':
+        izb = st.radio("Pogodi:", ["Gorile i Majmuni!", "Tarzan i Jane!", "AI & Antena riblja kost!"])
+        if izb == "AI & Antena riblja kost!" and st.button("OTVORI PUT"):
+            st.session_state.faza = 'OTAC_LAZI'; st.rerun()
 
+# FAZA: OTAC LAŽI I ISTINA
+elif st.session_state.faza == 'OTAC_LAZI':
+    st.write("Tko je Otac Laži?")
+    odg_ol = st.text_input("", key="ol", placeholder="...").lower().strip()
+    if odg_ol == "sotona":
+        st.markdown('<p class="bijela-velika">Zašto onda mislimo i vjerujemo da sve što vidimo i znamo je čista istina?</p>', unsafe_allow_html=True)
+        if st.button("Odmori mozak ili klikni ovdje za dalje"): st.session_state.faza = 'PAKAL'; st.rerun()
+
+# FAZA: PAKAL I HLADNOĆA
+elif st.session_state.faza == 'PAKAL':
+    st.write("Naučeni smo na molitvu Oče Naš u kojoj kaže: Kako na nebu tako i na zemlji.")
+    st.markdown('Nitko ne govori da lako može biti i ovo: Kako u <span style="color:red; font-weight:bold;">paklu</span> tako i na zemlji. Zašto?', unsafe_allow_html=True)
+    st.write("Otvori oči i prvo što ćeš vidjeti da ljubav hladi i da istinu upotpuni ono što je kao predmet hladno u tome ljudi traže ljubav.")
+    if st.button("NOVI TEKST"): st.session_state.faza = 'GLAD'; st.rerun()
+
+# FAZA: GLAD I MRTVI
 elif st.session_state.faza == 'GLAD':
-    st.write("Bez Boga smo...?")
-    if st.button("mrtvi!"): st.session_state.faza = 'SOBE'; st.rerun()
+    st.write("Bez Boga i duhovne tematike će ljudi biti gladni... Bez Boga smo...?")
+    c1, c2, c3 = st.columns(3)
+    if c1.button("mrtvi!"): st.session_state.faza = 'SOBE'; st.rerun()
+    if c2.button("slobodni!") or c3.button("izgubljeni!"): st.error("Krivo.")
 
+# FAZA: SOBE (GENERACIJE / SOTONA)
 elif st.session_state.faza == 'SOBE':
     cl, cd = st.columns(2)
-    if cl.button("Generacije"): st.session_state.soba = 'Biblija neće postojati.'
-    if cd.button("Sotona ne miruje"): st.session_state.soba = 'Sotona zarobljava ljude.'
-    if 'soba' in st.session_state:
-        if st.button("ŠTO JE POČETAK MUDROSTI?"): st.session_state.faza = 'MUDROST'; st.rerun()
+    if cl.button("Generacije"): st.info("Generacije koje dolaze neće tražiti Boga... Biblija neće postojati.")
+    if cd.button("Sotona ne miruje"): st.info("Sotona lagano zarobljava ljude i udaljava ih od zapovijedi Isusa Krista.")
+    if st.button("ŠTO JE POČETAK MUDROSTI?"): st.session_state.faza = 'MUDROST'; st.rerun()
 
+# FAZA: MUDROST I TAMU
 elif st.session_state.faza == 'MUDROST':
     st.write("Početak mudrosti je?")
-    odg = st.radio("", ["Gospodnji strah...", "Dremnuti.", "Kasno se probuditi."])
-    if st.button("DALJE"):
-        if "Gospodnji strah" in odg: st.session_state.faza = 'LEGIJA'; st.rerun()
+    odg = st.radio("", ["Gospodnji strah početak je mudrosti...", "Dremnuti.", "Kasno se probuditi."])
+    if st.button("POTVRDI"):
+        if "Gospodnji strah" in odg: st.session_state.faza = 'UNUTRAŠNJI_RAT'; st.rerun()
         else: izbaci_u_tamu("Krivo. Labirint se zatvara!")
 
-elif st.session_state.faza == 'LEGIJA':
-    st.write("Koga je Isus istjerao u krdo svinja?")
-    odg = st.radio("", ["Laži!", "Magiju!", "Legiju!"])
-    if st.button("POTVRDI"):
-        if odg == "Legiju!": st.session_state.faza = 'TEST_VJERE'; st.rerun()
-        else: izbaci_u_tamu("Nevjera zatvara vrata!")
+elif st.session_state.faza == 'UNUTRAŠNJI_RAT':
+    st.write("Strah Božji je početak mudrosti. Čovjek može biti uništen iznutra i bez rata. Ako se okrenemo izvoru života i primamo snagu od svjetlosti tada možda i pobijedimo...?")
+    odg_t = st.radio("", ["Tamu.", "Sami sebe.", "Hladne dane."])
+    if odg_t == "Tamu." and st.button("IDEMO DALJE"): st.session_state.faza = 'DVA_NASLOVA'; st.rerun()
 
-# --- KLJUČNA TOČKA KOJU SI TRAŽIO ---
-elif st.session_state.faza == 'TEST_VJERE':
+# FAZA: DVA NASLOVA
+elif st.session_state.faza == 'DVA_NASLOVA':
+    c1, c2 = st.columns(2)
+    if c1.button("Zašto se događaju zle stvari?"): st.session_state.naslov = 'ZLO'
+    if c2.button("Sve je u snazi vjere"): st.session_state.naslov = 'VJERA'
+
+    if st.session_state.get('naslov') == 'ZLO':
+        st.write("Materijalno ne spašava, nego?")
+        if st.radio("", ["Prijatelji.", "Dobar posao.", "Ljubav i Isus."]) == "Ljubav i Isus." and st.button("DALJE"): st.session_state.faza = 'LEGIJA'; st.rerun()
+    elif st.session_state.get('naslov') == 'VJERA':
+        st.write("Sotona se ne plaši imena Isus, samo Isus može protjerati zlo svojom milošću...")
+        if st.button("KOGA JE ISUS ISTJERAO?"): st.session_state.faza = 'LEGIJA'; st.rerun()
+
+# FAZA: LEGIJA I TEST VJERE (TVOJ ZAHTJEV ZA IZBACIVANJE)
+elif st.session_state.faza == 'LEGIJA':
+    st.write("Koga je Isus istjerao iz mladića u krdo svinja?")
+    odg_l = st.radio("", ["To su laži!", "To je bila magija!", "Legiju!"])
+    if st.button("PROVJERI"):
+        if odg_l == "Legiju!": st.session_state.faza = 'FINALNI_TEST_VJERE'; st.rerun()
+        else: izbaci_u_tamu("Nevjera zatvara vrata Labirinta!")
+
+elif st.session_state.faza == 'FINALNI_TEST_VJERE':
     st.markdown('<p class="bijela-velika">Vjeruješ li u Boga?</p>', unsafe_allow_html=True)
     c1, c2 = st.columns(2)
-    if c1.button("VJERUJEM!"):
-        st.session_state.faza = 'FINAL_SOBA'; st.rerun()
-    if c2.button("NE VJERUJEM!"):
-        izbaci_u_tamu("Labirint je završio... ali tama je u vama i samo Isus donosi svjetlo. Pronađi ga u Bibliji!")
+    if c1.button("Vjerujem!"): st.session_state.faza = 'ZADNJA_SOBA'; st.rerun()
+    if c2.button("Ne vjerujem!"):
+        st.write("Tko je Otac Laži?")
+        ol = st.text_input("", key="ol_kraj").lower().strip()
+        if ol == "sotona": izbaci_u_tamu("Vi ste tama i ostajete u Tami. Labirint se zatvara!")
 
-# --- POSLJEDNJA SOBA: 10 PITANJA ---
-elif st.session_state.faza == 'FINAL_SOBA':
-    st.markdown('<p class="zelena-autor" style="font-size:30px;">VRIJEME JE SVETO</p>', unsafe_allow_html=True)
-    
-    pitanja = [
-        "Vjeruješ li u Boga?", "Prihvaćaš li Isusa za spasitelja?", "Biblija je pisana Božja riječ?", 
-        "Sotona je Lažac?", "Vrijeme prolazi brzo?", "Grijeh privlači grijeh", 
-        "Sve Laži su opasne?", "Danas čitam Bibliju?", "Kada umremo tada je kraj?", "Ne čekaj uzmi Bibliju?"
-    ]
-    
-    with st.form("zadnji_ispit"):
-        odgovori = [st.radio(p, ["Ne", "Da"], horizontal=True, key=f"f_{i}") for i, p in enumerate(pitanja)]
-        if st.form_submit_button("ZAVRŠI"):
-            # Pitanje br. 9 (indeks 8) je trik: "Kada umremo tada je kraj?" - točan odgovor mora biti NE
-            if odgovori[8] == "Ne" and odgovori.count("Da") >= 7:
-                st.balloons()
-                st.success("ČESTITAMO! IZIŠLI STE U SVJETLO!")
-                st.markdown('<div style="border:2px solid #00FF41; padding:20px; text-align:center;"><h2>🛡️ ZNAČKA VJERNIKA</h2><p>Osvježi stranicu, zatvori ovo i uzmi Bibliju. Sjeti se laži su grijeh.</p></div>', unsafe_allow_html=True)
-                st.markdown('<br><center><a href="https://share.streamlit.io" style="color:#00FF41; font-weight:bold;">🔗 SVI MOJI PROJEKTI</a></center>', unsafe_allow_html=True)
-            else:
-                izbaci_u_tamu("Labirint je završio, izašli ste iz tame labirinta ali tama je u vama i samo Isus donosi svjetlo pronađi ga u Bibliji.")
+elif st.session_state.faza == 'ZADNJA_SOBA':
+    st.write("Želiš li nastaviti dublje kroz duhovne tekstove?")
+    c1, c2 = st.columns(2)
+    if c1.button("Želim!"): st.session_state.faza = 'VRIJEME_SVETO'; st.rerun()
+    if c2.button("Ne želim!"): izbaci_u_tamu("Žao mi je! Vrata se zatvaraju... Svjetlo potraži u Bibliji.")
